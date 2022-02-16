@@ -9,8 +9,16 @@ import javax.swing.*;
 import java.awt.EventQueue;
 import java.text.ParseException;
 
+/**
+ * Simple stopwatch and countdown timer app
+ * @author Wiktor Kotela
+ */
+
 public class Main
 {
+    /**
+     * @throws ParseException due to use of MaskFormatter in StopwatchFrame class
+     */
     public static void main(String[] args) throws ParseException
     {
         EventQueue.invokeLater(() ->

@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.text.MaskFormatter;
 import java.awt.*;
 import java.text.ParseException;
+
 public class StopwatchFrame extends JFrame
 {
     public final int DEFAULT_WIDTH = 640;
@@ -12,17 +13,18 @@ public class StopwatchFrame extends JFrame
     private JButton startButton;
     private JButton resetButton;
     private JButton stopButton;
-    private JMenuItem stopperMenu;
-    private JMenuItem counterMenu;
+    private JMenuItem stopwatchMenu;
+    private JMenuItem countdownMenu;
     private JMenuItem exitMenu;
+    //mode: false - means stopwatch mode, true - means countdown mode
     private boolean mode;
     private final Timer timer;
     private long startStopwatchTime;
     private long endStopwatchTime;
-    private long startCounterTime;
-    private long endCounterTime;
+    private long startCountdownTime;
+    private long endCountdownTime;
     private long stopwatchCurrentValue;
-    private long counterCurrentValue;
+    private long countdownCurrentValue;
     private long HH;
     private long MM;
     private long SS;
@@ -30,22 +32,29 @@ public class StopwatchFrame extends JFrame
 
     public StopwatchFrame() throws ParseException
     {
+        //Setting constant window size at the screen center
         Toolkit kit = Toolkit.getDefaultToolkit();
         int screenWidth = kit.getScreenSize().width;
         int screenHeight = kit.getScreenSize().height;
-        setBounds((screenWidth - 640) / 2, (screenHeight - 480) / 2, 640, 480);
+        setBounds((screenWidth - DEFAULT_WIDTH) / 2, (screenHeight - DEFAULT_HEIGHT) / 2, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
         setResizable(false);
         setTitle("Stoper");
+
+        //Default mode at startup is stopwatch
         mode = false;
 
+        //Method for creating UI elements
         createUI();
 
+        //Method for adding ActionListener to each element
         addActionListeners();
 
+        //Timer responsible for refreshing the time at textField
         timer = new Timer(1, event ->
         {
-            if (!mode) {
+            if (!mode)
+            {
                 endStopwatchTime = System.currentTimeMillis();
                 stopwatchCurrentValue = endStopwatchTime - startStopwatchTime;
                 var seconds = stopwatchCurrentValue / 1000;
@@ -57,7 +66,7 @@ public class StopwatchFrame extends JFrame
             }
         });
     }
-
+    //ParseException due to use of MaskFormatter
     public void createUI() throws ParseException
     {
         var bar = new JMenuBar();
@@ -66,13 +75,13 @@ public class StopwatchFrame extends JFrame
         var mainMenu = new JMenu("Menu");
         bar.add(mainMenu);
 
-        stopperMenu = new JMenuItem("Stoper");
-        mainMenu.add(stopperMenu);
+        stopwatchMenu = new JMenuItem("Stoper");
+        mainMenu.add(stopwatchMenu);
 
-        counterMenu = new JMenuItem("Minutnik");
-        mainMenu.add(counterMenu);
+        countdownMenu = new JMenuItem("Minutnik");
+        mainMenu.add(countdownMenu);
 
-        stopperMenu.setEnabled(false);
+        stopwatchMenu.setEnabled(false);
         exitMenu = new JMenuItem("Wyjście");
         mainMenu.add(exitMenu);
 
@@ -81,6 +90,7 @@ public class StopwatchFrame extends JFrame
         panel1.setLayout(new BorderLayout());
         setLayout(new GridLayout(2, 1));
 
+        //Setting HH:MM:SS:msmsms format of the textField
         MaskFormatter format = new MaskFormatter("##:##:##.###");
         textField = new JFormattedTextField(format);
         textField.setHorizontalAlignment(0);
@@ -88,13 +98,16 @@ public class StopwatchFrame extends JFrame
         MM = 0;
         SS = 0;
         sss = 0;
+        //Creating string to display correct format
         String time = String.format("%02d:%02d:%02d.%03d", HH, MM, SS, sss);
         textField.setText(time);
         textField.setFont(new Font("Lucida Sans Console", 1, 42));
 
         panel1.add(textField, "Center");
+        //Creating display area by adding 2 JPanels with GridLayout
         add(panel1);
         panel2.setLayout(new GridLayout(1, 3));
+        add(panel2);
 
         startButton = new JButton("START");
         startButton.setFont(new Font("Lucida Sans Console", 0, 28));
@@ -108,18 +121,17 @@ public class StopwatchFrame extends JFrame
         resetButton.setFont(new Font("Lucida Sans Console", 0, 28));
         panel2.add(resetButton);
 
-        add(panel2);
-
         textField.setEditable(false);
     }
 
     public void addActionListeners()
     {
-        stopperMenu.addActionListener((event) ->
+        //Actions when Stopwatch is selected from main menu
+        stopwatchMenu.addActionListener((event) ->
         {
             mode = false;
-            stopperMenu.setEnabled(false);
-            counterMenu.setEnabled(true);
+            stopwatchMenu.setEnabled(false);
+            countdownMenu.setEnabled(true);
             textField.setEditable(false);
             setTitle("Stoper");
             var seconds = stopwatchCurrentValue / 1000;
@@ -128,22 +140,26 @@ public class StopwatchFrame extends JFrame
             SS = seconds % 60;
             sss = stopwatchCurrentValue % 1000;
             textField.setText(String.format("%02d:%02d:%02d.%03d", HH, MM, SS, sss));
-        });
 
-        counterMenu.addActionListener((event) ->
+        });
+        //Actions when Countdown timer is selected from main menu
+        countdownMenu.addActionListener((event) ->
         {
             mode = true;
-            stopperMenu.setEnabled(true);
-            counterMenu.setEnabled(false);
+            stopwatchMenu.setEnabled(true);
+            countdownMenu.setEnabled(false);
             textField.setEditable(true);
             setTitle("Minutnik");
         });
 
+        //Actions when Exit is selected from main menu
         exitMenu.addActionListener((event) ->
         {
             System.exit(0);
         });
 
+        //Clicking start button assigns start and end times for each modes depending on whether
+        //measuring was already started before, locks start button and starts the timer
         startButton.addActionListener((event) ->
         {
             if (!mode)
@@ -160,10 +176,10 @@ public class StopwatchFrame extends JFrame
                 timer.start();
                 startButton.setEnabled(false);
                 stopButton.setEnabled(true);
-                counterMenu.setEnabled(false);
+                countdownMenu.setEnabled(false);
             }
         });
-
+        //Clicking stop button stops the current mode timer and locks current value on textField
         stopButton.addActionListener((event) ->
         {
             if (!mode)
@@ -178,10 +194,10 @@ public class StopwatchFrame extends JFrame
                 textField.setText(String.format("%02d:%02d:%02d.%03d", HH, MM, SS, sss));
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
-                counterMenu.setEnabled(true);
+                countdownMenu.setEnabled(true);
             }
         });
-
+        //Clicking stop button stops the timer and resets all time values for current mode
         resetButton.addActionListener((event) ->
         {
             if (!mode)

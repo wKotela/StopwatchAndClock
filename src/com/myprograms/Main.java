@@ -19,7 +19,7 @@ public class Main
     /**
      * @throws ParseException due to use of MaskFormatter in StopwatchFrame class
      */
-    public static void main(String[] args) throws ParseException
+    public static void main(String[] args) throws ParseException, InterruptedException
     {
         EventQueue.invokeLater(() ->
         {
@@ -31,6 +31,10 @@ public class Main
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             }
             catch (ParseException e)
+            {
+                e.printStackTrace();
+            }
+            catch(InterruptedException e)
             {
                 e.printStackTrace();
             }
